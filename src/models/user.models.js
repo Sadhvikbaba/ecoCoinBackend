@@ -40,7 +40,11 @@ const userSchema = new Schema({
     },
     gender : {
         type : Boolean,
-    }
+    },
+    images :[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref : "plants"
+    }]
 } , {
     timestamps: true,
 })

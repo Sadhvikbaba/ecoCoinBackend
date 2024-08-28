@@ -21,4 +21,4 @@ const plantSchema = new Schema({
 
 plantSchema.index({ location: '2dsphere' });
 
-const Plant = mongoose.model('Plant', plantSchema);
+export const Plant = mongoose.model('Plant', plantSchema);
