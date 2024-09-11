@@ -37,14 +37,11 @@ const userSchema = new Schema({
     },
     coins : {
         type : Number,
+        default : 0
     },
     gender : {
         type : Boolean,
-    },
-    images :[{
-        type: mongoose.Schema.Types.ObjectId,
-        ref : "plants"
-    }]
+    }
 } , {
     timestamps: true,
 })

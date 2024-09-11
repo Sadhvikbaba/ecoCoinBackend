@@ -6,19 +6,14 @@ const plantSchema = new Schema({
         required: true,
     },
     location: {
-        type: {
-            type: String,
-            enum: ['Point'],
-            required: true,
-            default: 'Point',
-        },
-        coordinates: {
-            type: [Number],
-            required: true,
-        },
+        type: String,
+        required:true
     },
+    owner : {
+        type :  mongoose.Schema.Types.ObjectId,
+        ref : "User"
+    }
 } , {timestamps:true})
 
-plantSchema.index({ location: '2dsphere' });
 
 export const Plant = mongoose.model('Plant', plantSchema);

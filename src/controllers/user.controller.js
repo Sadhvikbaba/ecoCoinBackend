@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { User } from "../models/user.models.js";
 import jwt from "jsonwebtoken";
 import {ApiResponse} from "../utils/ApiResponse.js"
+import { ApiError } from "../utils/ApiError.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -73,7 +74,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const loggedInUser = await User.findById(userDetails._id).select("-password -refreshToken -OTP");
 
     const accessTokenOptions = { httpOnly: true, secure: true, sameSite: 'None'};
-    const refreshTokenOptions = { httpOnly: true, secure: true, sameSite: 'None' , domain : '.vercel.app'};
+    const refreshTokenOptions = { httpOnly: true, secure: true, sameSite: 'None'};
 
     res.cookie("refreshToken", refreshToken, refreshTokenOptions);
     res.cookie("accessToken", accessToken, accessTokenOptions);
