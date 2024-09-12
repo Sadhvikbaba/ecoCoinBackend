@@ -6,6 +6,7 @@ import { extractText } from "../utils/extractText.js";
 import {ApiError} from "../utils/ApiError.js";
 import {ApiResponse} from "../utils/ApiResponse.js"
 import { uploadImageToImagga } from "../utils/analyzeImage.js"; 
+import fs from "fs";
 
 export const uploadImage = asyncHandler(async (req,res) => {
     const userId = req.user._id;
@@ -14,29 +15,44 @@ export const uploadImage = asyncHandler(async (req,res) => {
 
     if (!imageLocalPath) throw new ApiError(400, "Image needed");
 
-    const extractedText = await extractText(imageLocalPath);
+    let extractedText = await extractText(imageLocalPath);
 
     //console.log(extractedText);
-
     if(!extractedText) throw new ApiError(400 , "image from gps map camera is required");
 
-    let response = await uploadImageToImagga(imageLocalPath);
+    const regex = /Lat\s([0-9.]+)[^\d]+Long\s([0-9.]+)/;
+    const match = extractedText.match(regex);
+
+
+    if(!match.length>2) throw new ApiError(400 , "proper image is required");
+
+    const lat = Number( match[1]);
+    const long = Number( match[2]);
+
+    const exsistedPlant = await Plant.findOne({place : [lat , long]});
+
+    if(exsistedPlant){ 
+      fs.unlinkSync(imageLocalPath);
+      throw new ApiError(400 , "plant has already registered");
+    }
+
+    /*let response = await uploadImageToImagga(imageLocalPath);
+    console.log(response);
 
     response = response?.result?.tags
 
-
     const termsToFind = ["plant", "herb"];
 
-    let filteredObjects = response.filter((item) => {
+    let filteredObjects = response?.filter((item) => {
       return termsToFind.includes(item.tag.en.toLowerCase()) && item.confidence > 60;});
 
-    if(!filteredObjects) throw new ApiError(401 , "sorry you image is not upto the level for acceptence");
+    if(!filteredObjects) throw new ApiError(401 , "sorry you image is not upto the level for acceptence");*/
 
     const cloudRes = await uploadOnCloudinary(imageLocalPath);
 
     const plantRes = await Plant.create({
       owner : userId ,
-      location : extractedText ,
+      place : [lat,long],
       imageUrl : cloudRes?.url || ""
     })
 
@@ -45,9 +61,11 @@ export const uploadImage = asyncHandler(async (req,res) => {
     user.coins += 5;
 
     const updatedUser = await user.save()
-      
 
-   res.status(200).json(new ApiResponse(200, {data : extractedText , tags : filteredObjects , user : updatedUser} , "image accepted successfully"));
+    delete updatedUser.refreshToken
+    delete updatedUser.password
+
+   res.status(200).json(new ApiResponse(200, {extractedText : [lat , long] , image : plantRes ,user : updatedUser } , "image accepted successfully"));
 
     
 

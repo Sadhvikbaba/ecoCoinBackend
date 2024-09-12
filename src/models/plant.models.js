@@ -5,10 +5,9 @@ const plantSchema = new Schema({
         type: String,
         required: true,
     },
-    location: {
-        type: String,
-        required:true
-    },
+    place: [{
+        type : Number,
+    }],
     owner : {
         type :  mongoose.Schema.Types.ObjectId,
         ref : "User"
